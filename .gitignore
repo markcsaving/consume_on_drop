@@ -1,3 +1,4 @@
 target/
 .idea/
 consume_on_drop.iml
+cargo.lock
