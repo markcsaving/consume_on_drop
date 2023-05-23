@@ -2,6 +2,10 @@
 name = "consume_on_drop"
 version = "0.1.0"
 edition = "2021"
+authors = ["Mark Saving"]
+license = "MIT"
+categories = ["no-std::no-alloc", "rust-patterns"]
+keywords = ["consume", "drop"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -1,6 +1,5 @@
 #![no_std]
 #[warn(missing_docs)]
-
 extern crate alloc;
 
 /// This trait is for types with a specified means of consumption.
@@ -240,7 +239,6 @@ mod tests {
     /// See [this question](https://stackoverflow.com/questions/53254645/how-can-i-move-a-value-out-of-the-argument-to-dropdrop).
     #[test]
     fn stack_overflow_question_test() {
-
         static COUNT: AtomicUsize = AtomicUsize::new(0);
         struct T;
 
@@ -258,7 +256,9 @@ mod tests {
             }
         }
 
-        let s = S { _member: ConsumeOnDrop::new(T) };
+        let s = S {
+            _member: ConsumeOnDrop::new(T),
+        };
         drop(s);
         assert_eq!(COUNT.load(Ordering::Relaxed), 1);
     }
