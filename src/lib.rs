@@ -122,6 +122,11 @@ mod with_consumer {
     /// Note: this type does not derive traits like [`Eq`] and [`Hash`] because
     /// it may depend on context whether these traits should use only the `T`, or
     /// both the `T` and the `Q`.
+    ///
+    /// Note: you may find yourself unable to name the type `Q` if you use a closure here, which
+    /// could cause some inconvenience. If this is inconvenient, defunctionalize `Q` by implementing
+    /// a specific struct, or use [impl Trait in a type alias](https://rust-lang.github.io/impl-trait-initiative/explainer/tait.html)
+    /// (currently available only on nightly.
     #[derive(Default, Debug, Clone)]
     pub struct WithConsumer<T, Q: Consumer<T>> {
         inner: ConsumeOnDrop<RawWithConsumer<T, Q>>,
@@ -246,7 +251,7 @@ mod tests {
             _member: ConsumeOnDrop<T>,
         }
 
-        fn destroy_t(t: T) {
+        fn destroy_t(_t: T) {
             COUNT.fetch_add(1, Ordering::Relaxed);
         }
 
