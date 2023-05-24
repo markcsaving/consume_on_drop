@@ -6,6 +6,8 @@ authors = ["Mark Saving"]
 license = "MIT OR Apache"
 categories = ["no-std::no-alloc", "rust-patterns"]
 keywords = ["consume", "drop"]
+description = "A zero-cost abstraction that allows Drop::drop to consume self by value"
+readme = "../README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

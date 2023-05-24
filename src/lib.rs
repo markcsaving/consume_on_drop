@@ -267,4 +267,107 @@ mod tests {
         drop(s);
         assert_eq!(COUNT.load(Ordering::Relaxed), 1);
     }
+
+    #[test]
+    fn readme_2() {
+        use super::ConsumeOnDrop;
+
+        struct RawMut<'a> {
+            inner: &'a mut i32,
+        }
+
+        impl<'a> Consume for RawMut<'a> {
+            fn consume(self) {
+                *self.inner += 1;
+            }
+        }
+
+        struct MutRef<'a> {
+            inner: ConsumeOnDrop<RawMut<'a>>,
+        }
+
+        impl<'a> MutRef<'a> {
+            pub fn new(val: &'a mut i32) -> Self {
+                Self { inner: ConsumeOnDrop::new(RawMut { inner: val })}
+            }
+
+            pub fn into_inner(self) -> &'a mut i32 {
+                ConsumeOnDrop::into_inner(self.inner).inner
+            }
+        }
+
+        let mut x = 0;
+        {
+            let _z = MutRef::new(&mut x);
+        }
+        assert_eq!(x, 1);
+        {
+            let k = MutRef::new(&mut x);
+            let _k = k.into_inner();
+        }
+        assert_eq!(x, 1);
+    }
+
+    #[test]
+    fn readme_1() {
+        use super::{ConsumeOnDrop, WithConsumer};
+
+        struct T;
+
+        fn consume_t(_t: T) {
+            // println!("We consumed T")
+        }
+
+        impl Consume for T {
+            fn consume(self) {
+                consume_t(self)
+            }
+        }
+
+        fn main () {
+            let t = ConsumeOnDrop::new(T);  // A thin wrapper around T which calls T::consume on drop
+            drop(t);
+            let t = WithConsumer::new(T, consume_t); // Alternately, we can explicitly equip a T with a consumer.
+            drop(t);
+        }
+        main()
+    }
+
+    #[test]
+    #[should_panic]
+    fn readme_3() {
+        use super::WithConsumer;
+
+        struct Data {
+            string: Option<String>,
+        }
+
+        impl Data {
+            fn new(str: String) -> Self {
+                Self { string: Some(str) }
+            }
+
+            fn extend(&mut self, str: String) {
+                self.string.as_mut().unwrap().extend(str.chars())
+            }
+
+            fn poison(&mut self) {
+                self.string = None;
+            }
+        }
+
+        fn produce_string() -> String {
+            panic!("Oh no, we panicked!");
+        }
+
+        fn extend_produce(data: &mut Data) {
+            let mut data = WithConsumer::new(data, Data::poison);
+            data.extend(produce_string());
+            WithConsumer::into_inner(data);
+        }
+
+        let mut data = Data::new("Hello".into());
+
+        extend_produce(&mut data);
+    }
 }
