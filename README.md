@@ -24,7 +24,7 @@ The implementation of `WithConsumer` is completely safe (except insofar as it de
 ## Consume your type by value on drop
 
 ```rust
-use consume_on_drop::{ConsumeOnDrop, WithConsumer};
+use consume_on_drop::{Consume, ConsumeOnDrop, WithConsumer};
 
 struct T;
 
@@ -55,7 +55,7 @@ struct MutRef<'a> {
     inner: &'a mut i32,
 }
 
-impl<'a> MyRef<'a> {
+impl<'a> MuRef<'a> {
     pub fn new(val: &'a mut i32) -> Self {
         Self { inner: val }
     }
@@ -75,7 +75,7 @@ impl<'a> Drop for MutRef<'a> {
 but we can make it work using `ConsumeOnDrop`:
 
 ```rust
-use consume_on_drop::ConsumeOnDrop;
+use consume_on_drop::{Consume, ConsumeOnDrop};
 
 struct RawMut<'a> {
     inner: &'a mut i32,

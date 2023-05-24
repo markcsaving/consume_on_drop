@@ -310,7 +310,7 @@ mod tests {
 
     #[test]
     fn readme_1() {
-        use super::{ConsumeOnDrop, WithConsumer};
+        use super::{Consume, ConsumeOnDrop, WithConsumer};
 
         struct T;
 
@@ -336,38 +336,43 @@ mod tests {
     #[test]
     #[should_panic]
     fn readme_3() {
-        use super::WithConsumer;
+        mod inner {
+            use alloc::string::String;
+            use core::panic;
+            use super::WithConsumer;
 
-        struct Data {
-            string: Option<String>,
-        }
-
-        impl Data {
-            fn new(str: String) -> Self {
-                Self { string: Some(str) }
+            pub struct Data {
+                string: Option<String>,
             }
 
-            fn extend(&mut self, str: String) {
-                self.string.as_mut().unwrap().extend(str.chars())
+            impl Data {
+                pub fn new(str: String) -> Self {
+                    Self { string: Some(str) }
+                }
+
+                pub fn extend(&mut self, str: String) {
+                    self.string.as_mut().unwrap().extend(str.chars())
+                }
+
+                fn poison(&mut self) {
+                    self.string = None;
+                }
             }
 
-            fn poison(&mut self) {
-                self.string = None;
+            fn produce_string() -> String {
+                panic!("Oh no, we panicked!");
             }
+
+            pub fn extend_produce(data: &mut Data) {
+                let mut data = WithConsumer::new(data, Data::poison);
+                data.extend(produce_string());
+                WithConsumer::into_inner(data);
+            }
+
         }
 
-        fn produce_string() -> String {
-            panic!("Oh no, we panicked!");
-        }
+        let mut data = inner::Data::new("Hello".into());
 
-        fn extend_produce(data: &mut Data) {
-            let mut data = WithConsumer::new(data, Data::poison);
-            data.extend(produce_string());
-            WithConsumer::into_inner(data);
-        }
-
-        let mut data = Data::new("Hello".into());
-
-        extend_produce(&mut data);
+        inner::extend_produce( & mut data);
     }
 }
