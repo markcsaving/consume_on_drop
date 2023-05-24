@@ -142,3 +142,5 @@ fn extend_produce(data: &mut Data) {
     WithConsumer::into_inner(data); // but if there's no panic, we will not poison.
 }
 ```
+
+License: MIT license
